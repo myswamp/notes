@@ -48,10 +48,6 @@ exactly once - producer, consumer, topic, broker all invovled
 - exists on one broker, cannot split
 - consists of segments
 
-# commit log 
-- append only
-- data retention factor: 1. size 2. time
-
 # java client lib
 - consumer is not thread-safe
 
@@ -74,10 +70,58 @@ exactly once - producer, consumer, topic, broker all invovled
 
   # consumer notes
   - read from leader replica
-  - many partitions might increase end-to-end latency.
+  - many partitions might increase end-to-end latency. having more brokers to migrate in case of a broker failure
   - only one consumer per consumer group can read one partition
   - partition.assignment.strategy: Range, RoundRobin, Sticky, CooperativeSticky
   - reading from a compacted topic, consumers can still get multiple entries for a single key, Because compaction runs on the log files that are on disk, compaction may not see every message that exists in memory during cleanup
   - offsetsForTimes, times might appear out of order
   - the offset sent to broker is supposed to be the future index
+ 
+  # broker
+  - rack awareness
+  - Only one broker in the cluster acts as the controller: cluster management, partition reassignment
+  - each partition has a single leader replica, ISR list is maintained by the leader
+  - unclean.leader.election.enable is true, the controller selects a leader for a partition even if it is not up to date
+  - Kafka replicas do not heal themselves automatically
+  - JMX
+  - upgrading strategy: rolling restart, controlled.shutdown.enable. Setting this to true enables the transfer of partition leadership before a broker shuts down
+  - backup: MirrorMaker, Confluent Replicator. preferred option is for a cluster to be backed by a second cluster
+  - --under-replicated-partitions
+  - reducing number of partitions is not currently supported
+  - delete.topic.enable default to fasle
+  - better to set auto.create.topics.enable to false
+  - Replication factors <= no. of brokers
+  - segments make up a partition 
+  - segment has .log .index .timeindex
+  - segment name should be the same as the first offset in that file
+  - cleanup.policy=compact
+  - compact topic example: kafka's internal topic "__consumer_offsets"
+  - tombstone, message value of null
+ 
+  # storage
+  - logically sits between the long-term storage solutions of a database and the transient storage of a message broker
+  - default 7 days
+  - data retention factor: 1. size 2. time
+  - turn off deletion log.retention.bytes and log.retention.ms to –1
+  - for long term storage, move data out of kafka and store it to db, hdfs, cloud storage etc.
+  - keep raw, original data format
+  - treat data as an infinite series of events, move away from a batch mindset
+  - goood tip: create a new topic to reload archived data in s3 using kafka collect
+  - tiered storate: local, remote for older data
+  - Data retention should be driven by business needs. Decisions to weigh include the cost of storage and the growth rate of our data over time.
+
+  # tools
+  - debezium, secor, flume
+
+  # architecture with kafka
+  - ? lambda architecture: unites data from the serving layer and the speed layer to answer requests with a complete view of all recent and past data.
+  - kappa architecture: using Kafka Streams or ksqlDB to read all the events in near-real time and creating a view
+ 
+  # cluster size -
+    Kafka scales well, and it is not unheard of to reach hundreds of brokers for a single cluster
+
+  # scaling
+   - add brokers
+   - multiple clusters . e.g. CQRS write cluster and read cluster
+  
   
