@@ -13,11 +13,7 @@ exactly once - producer, consumer, topic, broker all invovled
 - data replay
 
 # kafka stream
-- a high level layer on top of producer/consumer
-- light weight, run in your application, no separate processing cluster
-- local state with fault-tolerance, stateful processing, distributed joins
-- one at a time message processing
-- exactly once
+
 
 # kafka connect
 - source connector: import to kafka
@@ -123,5 +119,27 @@ exactly once - producer, consumer, topic, broker all invovled
   # scaling
    - add brokers
    - multiple clusters . e.g. CQRS write cluster and read cluster
-  
-  
+
+  # monitoring
+  - top3: UnderMinIsrPartitionCount, UnderReplicatedPartitions, UnderMinIsr
+  - Kafka interceptors for tracing
+  - cluster monitoring & management: CMAK AKA kafka manager, Confluent Control Center, Cruise Control
+  - listeners vs advertised listeners
+
+  # setup
+  LISTENERS: are what interfaces Kafka binds to.
+  ADVERTISED_LISTENERS: are how clients can connect.
+
+  # stream processing
+  - Kafka Streams is for data transformations with potentially complex logic consuming and producing data back into Kafka
+  - high level layer on top of producer/consumer
+  - light weight, run in your application, no separate processing cluster
+  - local state with fault-tolerance, stateful processing, distributed joins,
+  - The state stores in use are backed by a replicated Kafka topic that is partitioned
+  - one at a time message processing
+  - exactly once
+  - KStreams: model a data-processing process as a graph of nodes, source/transform/filter/sink processor
+  - StreamsBuilder: starting point for building our topology
+  - KTable: add events to view, draw a parallel to a database table that deals with updates in place
+  - GlobalKTable: consumes all partitions, make the data available to our application regardless of which partition it is mapped to
+  - processor API: create topology explicityly
