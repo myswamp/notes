@@ -93,6 +93,11 @@ exactly once - producer, consumer, topic, broker all invovled
   - cleanup.policy=compact
   - compact topic example: kafka's internal topic "__consumer_offsets"
   - tombstone, message value of null
+
+  # schema registry
+  - internal topic for schema registry default to "_schemas"
+  - Alternative to a schema registry: produce data on a different topic with a breaking change; transform existing data to new topic if reprocessing old data is required.
+  - Compatibility rules: BACKWARD (the default type, adding non-required fields or removing fields, consumer upgrade first), BACKWARD_TRANSITIVE, FORWARD(add new fields ), FORWARD_TRANSITIVE, FULL,FULL_TRANSITIVE, and NONE
  
   # storage
   - logically sits between the long-term storage solutions of a database and the transient storage of a message broker
@@ -125,6 +130,9 @@ exactly once - producer, consumer, topic, broker all invovled
   - Kafka interceptors for tracing
   - cluster monitoring & management: CMAK AKA kafka manager, Confluent Control Center, Cruise Control
   - listeners vs advertised listeners
+
+  # protection
+  - quota 
 
   # setup
   LISTENERS: are what interfaces Kafka binds to.
