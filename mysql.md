@@ -26,7 +26,7 @@
 - vitess addresss challenges like resharding and rebalancing
 
 # transaction
-- InnoDB: every MySQL query is a transaction.
+- InnoDB: every query executes in a transaction by default, even a single SELECT statement
 - Reads do not lock rows (except for SELECT...FOR SHARE and SELECT...FOR UPDATE), but writes always lock rows
 - In a REPEATABLE READ transaction, InnoDB can lock more rows than it writes
 - default isolation level: REPEATABLE READ, it uses next-key locks to prevent phantom rows
@@ -40,6 +40,7 @@
   
 
 # lock
+- MySQL detects and breaks deadlocks, but they kill performance (MySQL kills one transaction to break the deadlock) and they’re annoying.
 - Record lock: Locks a single record
 - Gaplock: Locks the gap before (less than) a record
 - Next-key lock: Locks a single record and the gap before it, a combination of record lock and gap lock
@@ -72,4 +73,22 @@
  - The MySQL Performance Schema makes detailed transaction reporting possible
    
 
+ # Access Pattern
+ - Read/Write
+ - Throughput burst/steady/cyclical:
+ - Data Age: affects working set which contains frequently accessed data, frequently dredging up old data is problematic for performance
+ - MySQL must evict old pages, which it tracks in a least recently used (LRU) list.
+ - Occasionally accessing old data is not a problem
+ - old data is relative to access, not time. e.g.The profile of a user who last logged in a week ago isn’t necessarily old by time, but their profile data is relatively old because millions of other profile data have since been accessed, which means their profile data was evicted from memory.
+ - Data Model: determine the ideal data model for the access, then use a data store built for that data model
+ - Transaction Isolation
+ - Read Consistency: The duration of eventually is roughly equal to replication lag, which should be less than a second.
+ - Replicas used to serve read access are called read replicas. (Not all replicas serve reads; some are only for high availability, or other purposes.)
+ - concurrency
+ - Always ensure that offload reads are acceptable with eventual consistency and not part of a multi-statement transaction.
+ - do not offload all reads, e.g. read replicas with large storage but small CPU and memory (to save money)
+ - MySQL has a built-in query cache: forget it and never use it. It was deprecated as of MySQL 5.7.20 and removed as of MySQL 8.0.
+ - Enqueue Writes: Use a queue to stabilize write throughput, allow the application to respond gracefully and predictably to a thundering herd
+ - For write-heavy applications, enqueueing writes is the best practice and practically a requirement.
+ - Scale up hardware to improve performance after exhausting other solutions.
 
