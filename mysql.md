@@ -1,3 +1,10 @@
+# Query
+- Query metrics originate from the slow query log or the Performance Schema
+- The slow query log can log all queries when long_query_time is set to zero, this can increase disk I/O and use a significant amount of disk space.
+- Lock time is an inherent part of query time
+- Direct query optimization is changes to queries and indexes.
+- Indirect query optimization is changes to data and access patterns.
+
 # Index
 - leaf nodes contains metadata for row locking, transaction isolation etc.
 - the rightmost of every secondary index is the primary key
@@ -26,6 +33,7 @@
 - vitess addresss challenges like resharding and rebalancing
 
 # transaction
+- Locking and transaction isolation levels are related.
 - InnoDB: every query executes in a transaction by default, even a single SELECT statement
 - Reads do not lock rows (except for SELECT...FOR SHARE and SELECT...FOR UPDATE), but writes always lock rows
 - In a REPEATABLE READ transaction, InnoDB can lock more rows than it writes
@@ -41,6 +49,9 @@
 
 # lock
 - MySQL detects and breaks deadlocks, but they kill performance (MySQL kills one transaction to break the deadlock) and they’re annoying.
+- Locking reads should be avoided, especially SELECT...FOR UPDATE, because they don’t scale
+- Whereas table locks and row locks control access to table data, metadata locks control access to table structures (columns, indexes, and so on) to prevent changes while queries are accessing the tables. Every query acquires a metadata lock on every table that it accesses. Metadata locks are released at the end of the transaction, not the query.
+- SELECT queries must acquire shared metadata locks (MDL) on all tables accessed
 - Record lock: Locks a single record
 - Gaplock: Locks the gap before (less than) a record
 - Next-key lock: Locks a single record and the gap before it, a combination of record lock and gap lock
