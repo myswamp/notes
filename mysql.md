@@ -103,3 +103,22 @@
  - For write-heavy applications, enqueueing writes is the best practice and practically a requirement.
  - Scale up hardware to improve performance after exhausting other solutions.
 
+ # Replication
+ - Replication affects high availability.
+ - MySQL replication supports multiple writable sources, but this is rare due to the difficulty of handling write conflicts. A single writable source is the norm
+ - Replicas should always be read-only to avoid split-brain
+ - Replicas are not required to write binary logs, but it’s standard practice for high availability because it allows a replica to become the source
+ - A row image is a binary snapshot of a row before and after modification. A single SQL statement can generate countless row images, which yields a large transaction that might cause lag as it flows through replication.
+ - Asynchronous replication: default, transaction completes after binlogs are wrttien 
+ - semi‐synchronous replication: for each transaction, MySQL waits for a replica to acknowledge that it has written the binary log events for the transaction to its relay logs
+ - row-based replication: apply binary log events. faster, because they’re given the end result—data changes—and told where to apply them
+ - statement based replication: more compact, less space.
+ - Replication lag has three main causes: transaction throughput, a MySQL instance catching up after failure and rebuild (failover, legitimate, just be aware), and network issues
+ - backfilling, deleting, and archiving data are common operations that can cause massive replication lag, solution: proper batch size, monitor replication lag and slow down when replicas begin to lag. It’s better for an operation to take one day than to lag a replica by one second
+ - replication lag is data loss, use semisynchronous replication to avoid data loss!!
+ - semisynchronous replication requires that the source and replicas are on a fast, local network because network latency implicitly throttles transaction throughput on the source.
+ - Reducing Lag: Multithreaded Replication, ---Transaction dependency tracking
+ - The de facto tool for monitoring MySQL replication is pt-heartbeat.
+   • The MySQL metric for replication lag, Seconds_Behind_Source, can be misleading; avoid relying on it.
+   • Use a purpose-built tool to measure and report MySQL replication lag at subsec‐ ond intervals.
+
