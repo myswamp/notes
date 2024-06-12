@@ -122,3 +122,24 @@
    • The MySQL metric for replication lag, Seconds_Behind_Source, can be misleading; avoid relying on it.
    • Use a purpose-built tool to measure and report MySQL replication lag at subsec‐ ond intervals.
 
+   # Schema Changes
+   - online schema change (OSC) tools: pt-online-schema-change/gh-ost/certain built-in online DDL operations can run for days or weeks while allowing the application to function normally
+  
+   # Sharding
+   - limit the total data size of a single MySQL instance to 2 TB (date 2021 DEC) 
+   - To determine whether sharding is needed, estimate data size and growth for the next four years, whether the data set is bounded or unbounded
+   - application, not MySQL, is responsible for mapping and accessing data by shard key because MySQL has no built-in concept of sharding
+   - An ideal shard key has three properties: High cardinality, Reference application entities(so access do not cross shard), Small
+   - common strategies: hash, range, and lookup (or directory).
+   - challenges:
+      ^ transactions(avoid),
+      ^ joins(applications do it),
+      ^ Cross-shard queries(A moderate number of cross-shard queries is inevitable and acceptable, but scatter queries should be avoided)
+      ^ Resharding: don’t wildly overestimate, but estimate generously.
+         • An initial bulk data copy from old to new shards
+         • Sync changes on old shard to new shards (during and after data copy)
+         • Cutover process to switch to new shards
+   - Rebalancing: handle hot shards
+   - Online schema changes: least complex challenge
+
+
