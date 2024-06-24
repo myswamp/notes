@@ -36,6 +36,7 @@ exactly once - producer, consumer, topic, broker all invovled
 
 # replication
 - only one replica leader in a replica group
+- replica.lag.time.max.ms default to 30000. specifies what replicas are considered stuck or lagging
 
 # consumer
 - polls one or more topics
