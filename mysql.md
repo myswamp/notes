@@ -9,6 +9,7 @@
 - leaf nodes contains metadata for row locking, transaction isolation etc.
 - the rightmost of every secondary index is the primary key
 - Use pt-duplicate-key-checker to find and report duplicate indexes.
+- index pushdown: pushing down conditions to the storage engine level, Only the matching rows are then passed back to the MySQL server layer
 
 
 # access methods
