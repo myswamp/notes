@@ -22,10 +22,6 @@ exactly once - producer, consumer, topic, broker all invovled
 # ksqlDB
 - continuous query over a data stream
 
-# where kafka shines
-- large volumes of data
-- real-time streaming
-
 # when not to use kafka
 - random access pattern
 - strict ordering, one producer thread, one partition in topic, one consumer per group
@@ -44,6 +40,12 @@ exactly once - producer, consumer, topic, broker all invovled
 # partition
 - exists on one broker, cannot split
 - consists of segments
+
+# Rebalacne
+- when? partitions +, consumers +-
+- rely on consumer group coordinator, one broker has one coordinator
+- consumer sent join/sync group request and heart beat to coordinator on broker
+- strategy: range(default), round robin, sticky (take into account historical assignments, avoid data skew)
 
 # java client lib
 - consumer is not thread-safe
@@ -65,7 +67,7 @@ exactly once - producer, consumer, topic, broker all invovled
 - partitioner.class
 - async: Callback
 
-  # consumer notes
+# consumer notes
   - read from leader replica
   - many partitions might increase end-to-end latency. having more brokers to migrate in case of a broker failure
   - only one consumer per consumer group can read one partition
@@ -74,7 +76,7 @@ exactly once - producer, consumer, topic, broker all invovled
   - offsetsForTimes, times might appear out of order
   - the offset sent to broker is supposed to be the future index
  
-  # broker
+# broker
   - rack awareness
   - Only one broker in the cluster acts as the controller: cluster management, partition reassignment
   - each partition has a single leader replica, ISR list is maintained by the leader
@@ -88,19 +90,23 @@ exactly once - producer, consumer, topic, broker all invovled
   - delete.topic.enable default to fasle
   - better to set auto.create.topics.enable to false
   - Replication factors <= no. of brokers
-  - segments make up a partition 
-  - segment has .log .index .timeindex
-  - segment name should be the same as the first offset in that file
+
   - cleanup.policy=compact
   - compact topic example: kafka's internal topic "__consumer_offsets"
   - tombstone, message value of null
+ 
+# Message Storage
+  - segments make up a partition 
+  - segment has .log .index .timeindex
+  - .index contains offset+position e.g. 3,55 starting from 55th bytes in the file
+  - segment name should be the same as the first offset in that file
 
-  # schema registry
+# schema registry
   - internal topic for schema registry default to "_schemas"
   - Alternative to a schema registry: produce data on a different topic with a breaking change; transform existing data to new topic if reprocessing old data is required.
   - Compatibility rules: BACKWARD (the default type, adding non-required fields or removing fields, consumer upgrade first), BACKWARD_TRANSITIVE, FORWARD(add new fields ), FORWARD_TRANSITIVE, FULL,FULL_TRANSITIVE, and NONE
  
-  # storage
+# storage
   - logically sits between the long-term storage solutions of a database and the transient storage of a message broker
   - default 7 days
   - data retention factor: 1. size 2. time
