@@ -67,6 +67,11 @@ exactly once - producer, consumer, topic, broker all invovled
 - partitioner.class
 - async: Callback
 
+# ISR in sync replica set
+  - lagging behind the leader for more than 10 seconds it is removed from the ISR
+  - replica.lag.time.max.ms default 10000 
+  - min-insync.replicas default 1 
+
 # consumer notes
   - read from leader replica
   - many partitions might increase end-to-end latency. having more brokers to migrate in case of a broker failure
